@@ -1,0 +1,28 @@
+{% include "admin_manage/header.html" %}
+	<div class="result-wrap">
+		<div class="result-title">
+			<h1>现在已录入人数&nbsp;<span style="color:red">{{choice_number}}</span></h1>
+		</div>
+		<div class="result-content">
+			<button id="compute">计算面试时间</button>
+		</div>
+	</div>
+</div>
+
+</div>
+
+<script type="text/javascript">
+	$(document).ready(function(){
+		$("#compute").click(function(){
+			$.ajax({
+				type : 'GET',
+				url : "{% url 'admin_manage:calculate' %}",
+				success : function(data){
+					alert(data);
+				}
+			});
+		});
+	});
+</script>
+</body>
+</html>

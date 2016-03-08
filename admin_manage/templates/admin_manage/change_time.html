@@ -1,0 +1,275 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>报名信息录入</title>
+
+    {% load staticfiles %}
+
+    <link href="{% static 'registration/css/font-awesome.min.css' %}" rel="stylesheet">
+    <link href="{% static 'registration/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'registration/css/templatemo-style.css' %}" rel="stylesheet">
+    <link rel="shortcut icon" href="{% static 'registration/images/se.png' %}" type="image/x-icon" />
+    <style type="text/css">
+        .templatemo-register{
+            margin-left: auto;
+            margin-right: auto;
+            padding: 20px,50px,50px,50px;
+            max-width: 350px;
+        }
+        .header_right{
+            float: right;
+            background: url("{% static 'registration/images/logout.png' %}") no-repeat left;
+            padding: 0 0 0 22px;
+        }
+        label{
+            display: inline;
+        }
+        #stuid{
+            display: inline;
+        }
+        #id1,#id2,#id3{
+            width: 65px;
+            display: inline;
+        }
+        #input_name{
+            width: 200px;
+            display: inline;
+        }
+        #class_num{
+            width: 100px;
+            display: inline;
+        }
+        #doom_num{
+            width: 150px;
+            display: inline;
+        }
+        #first_choice{
+            width: 80px;
+            display: inline;
+        }
+        #first_choice_time{
+            width: 60px;
+            display: inline;
+        }
+        #second_choice{
+            width: 80px;
+            display: inline;
+        }
+        #second_choice_time{
+            width: 60px;
+            display: inline;
+        }
+    </style>
+
+    <script src="{% static 'registration/js/jquery-1.11.2.min.js' %}"></script>
+    <script src="{% static 'registration/js/jquery.cookie.js' %}"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $("#id3").keyup(function(){
+                //学号前四位
+                var id1 = $("#id1").val();
+                //学号中间四位
+                var id2 = $("#id2").val();
+                //学号后四位
+                var id3 = $("#id3").val();
+                //完整学号
+                var stu_id = id1 + id2 + id3;
+                if(stu_id.length == 12){
+                    $.ajax({
+                        type: 'POST',
+                        url: "{% url 'admin_manage:get_student_interview' %}",
+                        data: {
+                            stu_id : stu_id,
+                        },
+                        cache: false,
+                        success:function(data){
+                            $("#input_name").val(data.stu_name);
+                            $("#class_num").val(data.class_num);
+                            $("#doom_num").val(data.doom_num);
+                            $("#first_choice").val(data.first_dept);
+                            $("#second_choice").val(data.second_dept);
+                            $("#first_choice_time").val(data.first_batch);
+                            $("#second_choice_time").val(data.second_batch);
+                            $("#first_choice_time").focus();
+                        },
+                        error:function(XMLHttpRequest,textStatus,errorThrown){
+                            $("#input_name").val("");
+                            $("#class_num").val("");
+                            $("#doom_num").val("");
+                            $("#first_choice").val("");
+                            $("#second_choice").val("");
+                            $("#first_choice_time").val("");
+                            $("#second_choice_time").val("");
+                        },
+                        dataType:"json"
+                    });
+                }else{ //清空表单
+                    $("#input_name").val("");
+                    $("#class_num").val("");
+                    $("#doom_num").val("");
+                    $("#first_choice").val("");
+                    $("#second_choice").val("");
+                    $("#first_choice_time").val("");
+                    $("#second_choice_time").val("");
+                }
+            });
+
+            $("#id2").keyup(function(){
+                var id2 = $("#id2").val();
+                if(id2.length == 4){
+                    $("#id3").focus();
+                }
+            });
+
+            $("#save").click(function(){
+                var id1 = $("#id1").val();
+                var id2 = $("#id2").val();
+                var id3 = $("#id3").val();
+                var first_choice_time = $("#first_choice_time").val();
+                var second_choice_time = $("#second_choice_time").val();
+                var stu_id = id1 + id2 + id3;
+                var result = checkform1(id1,id2,id3,first_choice_time,second_choice_time);
+                if(result){
+                    $.ajax({
+                        type: 'POST',
+                        url: "{% url 'admin_manage:save_student_interview' %}",
+                        data: {
+                            stu_id : stu_id,
+                            first_choice_time : first_choice_time,
+                            second_choice_time : second_choice_time,
+                        },
+                        cache: false,
+                        success:function(data){
+                            alert(data);
+                        },
+                        error:function(XMLHttpRequest,textStatus,errorThrown){
+                            alert(errorThrown);
+                        },
+                    });
+                }
+            });
+
+            function checkform1(id1,id2,id3,first_choice_time,second_choice_time){
+                var result = true;
+                if(first_choice == ""){
+                    alert("第一志愿不能为空！");
+                    result = false;
+                }else{
+                    if(first_choice == second_choice){
+                        alert("第一志愿第二志愿不能相同！");
+                        result = false;
+                    }
+                    var stu_id = id1 + id2 + id3;
+                    if(stu_id.length != 12){
+                        alert("学号输入有误！");
+                        result = false;
+                    }
+                    if(first_choice_time == ""){
+                        alert("第一志愿时间不能为空！");
+                        result = false;
+                    }
+                    if(second_choice_time == ""){
+                        alert("第二志愿时间不能为空！");
+                        result = false;
+                    }
+                    if(Math.abs(parseInt(first_choice_time) - parseInt(second_choice_time)) <= 1){
+                        alert("第一第二志愿之间要间隔半小时");
+                        result = false;
+                    }
+                }
+                return result;
+            }
+
+            function checkform(id1,id2,id3,first_choice,second_choice){
+                var result = true;
+                if(first_choice == ""){
+                    alert("第一志愿不能为空！");
+                    result = false;
+                }else{
+                    if(first_choice == second_choice){
+                        alert("第一志愿第二志愿不能相同！");
+                        result = false;
+                    }
+                    var stu_id = id1 + id2 + id3;
+                    if(stu_id.length != 12){
+                        alert("学号输入有误！");
+                        result = false;
+                    }
+                    if(first_choice != "xxb" && first_choice != "dyb" && first_choice != "xzb" && first_choice != "zyzb" && first_choice != "zzb" && first_choice != "wlb" && first_choice != "xwb" && first_choice != "tyb" && first_choice != "shb" && first_choice != "wyb" && first_choice != "xsb" && first_choice != "xcb" && first_choice != "stb" && first_choice != ""){
+                        alert("第一志愿输入有误！");
+                        result = false;
+                    }
+                    if(second_choice != "xxb" && second_choice != "dyb" && second_choice != "xzb" && second_choice != "zyzb" && second_choice != "zzb" && second_choice != "wlb" && second_choice != "xwb" && second_choice != "tyb" && second_choice != "shb" && second_choice != "wyb" && second_choice != "xsb" && second_choice != "xcb" && second_choice != "stb" && second_choice != ""){
+                        alert("第二志愿输入有误！");
+                        result = false;
+                    }
+                }
+                return result;
+            }
+        });
+    </script>
+
+</head>
+<body class="light-gray-bg">
+    <div class="templatemo-content-widget white-bg templatemo-register">
+        <div class="header_right"><a href="{% url 'registration:logout' %}" class="logout">登出</a>&nbsp;&nbsp;<a href="{% url 'admin_manage:index' %}" class="logout">返回管理页面</a> </div>
+        <header class="text-center">
+            <img src="{% static 'registration/images/logo_white.jpg' %}" height="200px" width="200px">
+        </header>
+        <br>
+        <form action="Register" method="post" class="templatemo-login-form">
+        {% csrf_token %}
+            <div class="form-group">
+                <div class="form-group" id="stuid">
+                    <label for="id1">学号：</label>
+                    <input type="text" name="id1" id="id1" class="form-control" value="2015" disabled="disabled" maxlength="4">&nbsp;-&nbsp;
+                    <input type="text" name="id2" id="id2" class="form-control" maxlength="4">&nbsp;-&nbsp;
+                    <input type="text" name="id3" id="id3" class="form-control" maxlength="4">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-group">
+                    <label for="input_name">姓名：</label>
+                    <input id="input_name"name="input_name" class="form-control" disabled="disabled">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-group">
+                    <label for="class_num">班别：</label>
+                    <input id="class_num" name="class_num" class="form-control" disabled="disabled">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-group">
+                    <label for="doom_num">宿舍：</label>
+                    <input id="doom_num" name="doom_num" class="form-control" disabled="disabled">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-group">
+                    <label for="first_choice">第一志愿部门：</label>
+                    <input id="first_choice" name="first_choice" class="form-control" disabled="disabled">
+                    &nbsp;&nbsp;
+                    <input id="first_choice_time" name="first_choice_time" class="form-control">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-group">
+                    <label for="second_choice">第二志愿部门：</label>
+                    <input id="second_choice" name="second_choice" class="form-control" disabled="disabled">
+                    &nbsp;&nbsp;
+                    <input id="second_choice_time" name="second_choice_time" class="form-control">
+                </div>
+            </div>
+            <div class="form-group">
+                <button id="save" type="button" class="templatemo-blue-button">保存</button>
+                <button id="clear" type="reset" class="templatemo-blue-button">清空</button>
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>

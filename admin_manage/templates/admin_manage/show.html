@@ -1,0 +1,37 @@
+{% include "admin_manage/header.html" %}
+	<div class="result-wrap">
+		<div class="result-title">
+			<h1>各部门面试时间安排结果</h1>
+		</div>
+		<div class="result-content">
+			<table border="1">
+				<tbody>
+					<tr>
+						<td>&nbsp;</td>
+						{% for batch in dep_batch_list %}
+							<td>{{batch}}</td>
+						{% endfor %}
+					</tr>
+					{% for dep_key,batch_list_value in dep_show.items %}
+					<tr>
+						<td>{{dep_key}}</td>
+						{% for batch_key,batch_value in batch_list_value.items %}
+						<td id="{{batch_key}}">
+						{% for student in batch_value %}
+						{{student.student_id}} - {{student.student_name}} <br />
+						{% endfor %}
+						</td>
+						{% endfor %}
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+</div>
+
+</div>
+
+</body>
+</html>
